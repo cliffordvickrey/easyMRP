@@ -543,9 +543,8 @@ setMethod(
         # defaults
         if(missing(model.type)) model.type<-'mrp'
         
-        # fixed-effect coefficients
+        # fixed effect coefficients
         raw.coefs<-data.frame(coef(summary(object@estimator[[model.type]])))
-        
         coefs=data.frame(
             var.name=rownames(raw.coefs),
             estimate=raw.coefs$Estimate,
@@ -778,7 +777,7 @@ setMethod(
         cat('MRP error: ',sprintf('%1.2f',mean(object@combined.mrp.error,
         na.rm=TRUE)),'\n',sep='')
         cat('Comparisons: ',length(object@combined.sampling.error[!is.na(
-        object@sampling.error)]),'\n',sep='')
+        object@combined.sampling.error)]),'\n',sep='')
         cat('Win %: ',sprintf('%.2f%%',mean(object@combined.wins,na.rm=TRUE)
         ),'\n',sep='')
         cat('t value: ',object@combined.t.stat,'\n',sep='')
