@@ -17,6 +17,7 @@ Mrp<-setClass(
         poll.path='character',
         post.strat.path='character',
         bin.path='character',
+		coef.path='character',
         output.path='character',
         mrp.model='character',
         weight.var='character',
@@ -47,6 +48,11 @@ Mrp<-setClass(
         wins='numeric',
         t.stat='numeric',
         p.stat='numeric',
+        combined.sampling.error='numeric',
+        combined.mrp.error='numeric',
+        combined.wins='numeric',
+        combined.t.stat='numeric',
+        combined.p.stat='numeric',
         model.i='list',
         convert.underscore='logical'
     ),
@@ -57,6 +63,7 @@ Mrp<-setClass(
         poll.path='poll.csv',
         post.strat.path='post.strat.csv',
         bin.path='',
+		coef.path='model.csv',
         output.path='mrp.csv',
         mrp.model='',
         weight.var='weight',
@@ -87,6 +94,11 @@ Mrp<-setClass(
         wins=c(),
         t.stat=c(),
         p.stat=c(),
+        combined.sampling.error=c(),
+        combined.mrp.error=c(),
+        combined.wins=c(),
+        combined.t.stat=c(),
+        combined.p.stat=c(),
         model.i=list(mrp=0,sim=0),
         convert.underscore=TRUE
     )
@@ -518,6 +530,58 @@ setMethod(
     }
 )
 
+# dump the model coefficients
+setGeneric(
+    name='dumpCoefficients',
+    def=function(object,model.type)
+        standardGeneric('dumpCoefficients')
+)
+setMethod(
+    f='dumpCoefficients',
+    signature='Mrp',
+    definition=function(object,model.type){
+        # defaults
+        if(missing(model.type)) model.type<-'mrp'
+		
+		# fixed-effect coefficients
+		raw.coefs<-data.frame(coef(summary(object@estimator[[model.type]])))
+		
+		coefs=data.frame(
+			var.name=rownames(raw.coefs),
+			estimate=raw.coefs$Estimate,
+			std.error=raw.coefs$Std..Error,
+			z=raw.coefs$z.value,
+			p.z=raw.coefs$Pr...z..
+		)
+		rm(raw.coefs)
+		
+		# append random effects (as pseudo-fixed effects)
+		# higher standard deviations = the greater the impact of the random
+		# predictor on Y
+		std.devs<-do.call(data.frame,VarCorr(object@estimator[[model.type]]))
+		for(i in c(1:ncol(std.devs)))
+			coefs<-rbind(
+				coefs,
+				data.frame(
+					var.name=paste(
+						'intercept:',
+						names(object@ranefs[[model.type]])[i]
+					),
+					estimate=as.numeric(std.devs[i]),
+					std.error=c(NA),
+					z=c(NA),
+					p.z=c(NA)
+				)
+			)
+		
+		# save model coefficients
+		write.csv(coefs,file=object@coef.path,row.names=FALSE)
+		
+		# return object
+		object
+	}
+)
+
 # clear data except output
 setGeneric(
     name='clearData',
@@ -567,12 +631,17 @@ setMethod(
 
         # run the model, if it's not already saved
         cat('Converging model...\n')
-        if(typeof(object@estimator$mrp)!='S4') object<-runModel(object)
+        if(typeof(object@estimator$mrp)!='S4') object<-runModel(object) else
+		cat('(NOTE: loading model data from memory)\n')
 
         # fix the missing random effects to account for missing state
         # intercepts
         cat('Filling missing random intercepts...\n')
         object<-fillMissingIntercepts(object)
+
+        # saving the fitted coefficients
+        cat('Saving fitted coefficients...\n')
+        object<-dumpCoefficients(object)
 
         # post-stratify data
         cat('Post-stratifying model estimates...\n')
@@ -587,7 +656,7 @@ setMethod(
         object<-weightedVariance(object)
 
         # save the MRP point estimates
-        cat('Saving...\n')
+        cat('Saving estimates...\n')
         object<-saveEstimates(object)
         
         # return object
@@ -676,16 +745,44 @@ setMethod(
         object@t.stat<-as.numeric(ttest$statistic)
         object@p.stat<-as.numeric(ttest$p.value)
         
-        # show summary stats
-        cat('\nResults:\n')
+        # show summary stats, current simulation
+        cat('\nResults of simulation #',object@model.i$sim,':\n',sep='')
         cat('Sampling error: ',sprintf('%1.2f',mean(object@sampling.error,
         na.rm=TRUE)),'\n',sep='')
         cat('MRP error: ',sprintf('%1.2f',mean(object@mrp.error,na.rm=TRUE)),
         '\n',sep='')
-        cat('Win %: ',sprintf('%.2f%%',mean(object@wins,na.rm=TRUE)),'\n\n',
+        cat('Comparisons: ',length(object@sampling.error[!is.na(
+		object@sampling.error)]),'\n',sep='')
+        cat('Win %: ',sprintf('%.2f%%',mean(object@wins,na.rm=TRUE)),'\n',
         sep='')
-        cat('t value: ',object@t.stat,'\n\n',sep='')
-        cat('pr(|T| > |t|): ',object@p.stat,'\n\n',sep='')
+        cat('t value: ',object@t.stat,'\n',sep='')
+        cat('pr(|T| > |t|): ',object@p.stat,'\n',sep='')
+		
+		# update combined stats
+		for(x in c('sampling.error','mrp.error','wins'))
+			slot(object,paste('combined',x,sep='.'))<-c(
+				slot(object,paste('combined',x,sep='.')),
+				slot(object,x)
+			)
+        combined.ttest<-t.test(
+            object@combined.sampling.error,
+            object@combined.mrp.error
+        )
+        object@combined.t.stat<-as.numeric(combined.ttest$statistic)
+        object@combined.p.stat<-as.numeric(combined.ttest$p.value)
+		
+		# show summary stats, all simulations
+        cat('\nResults of all simulations so far:\n')
+        cat('Sampling error: ',sprintf('%1.2f',mean(
+		object@combined.sampling.error,na.rm=TRUE)),'\n',sep='')
+        cat('MRP error: ',sprintf('%1.2f',mean(object@combined.mrp.error,
+		na.rm=TRUE)),'\n',sep='')
+        cat('Comparisons: ',length(object@combined.sampling.error[!is.na(
+		object@sampling.error)]),'\n',sep='')
+        cat('Win %: ',sprintf('%.2f%%',mean(object@combined.wins,na.rm=TRUE)
+		),'\n',sep='')
+        cat('t value: ',object@combined.t.stat,'\n',sep='')
+        cat('pr(|T| > |t|): ',object@combined.p.stat,'\n\n',sep='')
         
         # return object
         object

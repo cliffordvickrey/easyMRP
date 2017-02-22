@@ -24,6 +24,7 @@ example.mrp@substate.fe.path<-paste(wd,'example.csv','county.fe.csv',sep='/')
 example.mrp@poll.path<-paste(wd,'example.csv','cces.truncated.csv',sep='/')
 example.mrp@post.strat.path<-paste(wd,'example.csv','post.strat.csv',sep='/')
 example.mrp@bin.path<-paste(wd,'example.bin',sep='/')
+example.mrp@coef.path<-paste(wd,'example.model.csv',sep='/')
 example.mrp@output.path<-paste(wd,'example.mrp.csv',sep='/')
 
 # MRP model
@@ -63,4 +64,5 @@ example.mrp@mrp.model<-
 example.mrp<-runMrp(example.mrp)
 
 # sim
-sim<-validationSim(example.mrp,.05)
+example.mrp<-validationSim(example.mrp,.05)
+example.mrp<-validationSim(example.mrp,.05)
