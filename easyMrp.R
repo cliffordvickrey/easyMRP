@@ -108,7 +108,7 @@ Mrp<-setClass(
 setGeneric(name=
     'loadData',
     def=function(object,model.name)
-        standardGeneric('loadData'),
+        standardGeneric('loadData')
 )
 setMethod(
     f='loadData',
@@ -752,7 +752,7 @@ setMethod(
         '\n',sep='')
         cat('Comparisons: ',length(object@sampling.error[!is.na(
         object@sampling.error)]),'\n',sep='')
-        cat('Win %: ',sprintf('%.2f%%',mean(object@wins,na.rm=TRUE)),'\n',
+        cat('Win %: ',sprintf('%.2f%%',mean(object@wins,na.rm=TRUE)*100),'\n',
         sep='')
         cat('t value: ',object@t.stat,'\n',sep='')
         cat('pr(|T| > |t|): ',object@p.stat,'\n',sep='')
@@ -778,8 +778,8 @@ setMethod(
         na.rm=TRUE)),'\n',sep='')
         cat('Comparisons: ',length(object@combined.sampling.error[!is.na(
         object@combined.sampling.error)]),'\n',sep='')
-        cat('Win %: ',sprintf('%.2f%%',mean(object@combined.wins,na.rm=TRUE)
-        ),'\n',sep='')
+        cat('Win %: ',sprintf('%.2f%%',mean(object@combined.wins,na.rm=TRUE)*
+        100),'\n',sep='')
         cat('t value: ',object@combined.t.stat,'\n',sep='')
         cat('pr(|T| > |t|): ',object@combined.p.stat,'\n\n',sep='')
         

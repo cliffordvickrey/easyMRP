@@ -63,7 +63,7 @@ Example output (two simulations):
     Sampling error: 0.39
     MRP error: 0.32
     Comparisons: 314
-    Win %: 0.73%
+    Win %: 73.01%
     t value: 3.866925
     pr(|T| > |t|): 0.0001297358
     
@@ -71,7 +71,7 @@ Example output (two simulations):
     Sampling error: 0.39
     MRP error: 0.32
     Comparisons: 314
-    Win %: 0.73%
+    Win %: 73.01%
     t value: 3.866925
     pr(|T| > |t|): 0.0001297358
     
@@ -81,7 +81,7 @@ Example output (two simulations):
     Sampling error: 0.40
     MRP error: 0.32
     Comparisons: 345
-    Win %: 0.75%
+    Win %: 74.78%
     t value: 4.710483
     pr(|T| > |t|): 3.370071e-06
     
@@ -89,7 +89,7 @@ Example output (two simulations):
     Sampling error: 0.40
     MRP error: 0.32
     Comparisons: 659
-    Win %: 0.74%
+    Win %: 73.89%
     t value: 6.083234
     pr(|T| > |t|): 1.827467e-09
 
