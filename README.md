@@ -23,71 +23,71 @@ foo<-Mrp()
 
 Define the following properties with the S4 slot selector (foo@bar<-x):
 
-geographies.path: path to a CSV containing geography identifiers (see example)
-poll.path: path to a CSV containing the survey data for MRP disaggregation
-post.strat.path: path to a CSV containing post-stratification for MRP's probability adjustment
-bin.path: directory with which to store compressed R binaries for later use. For speed, EasyMRP will convert each CSV, as well as the multilevel model, into an R binary and load these for future MRP procedures. EasyMRP also stores the multilevel model in this directory so that R will not need to reconverge the model if you run the same script again
-coef.path: path to a CSV that will contain the model's random and fixed effect estimates, along with significance levels
-output.path: path to a CSV that will contain the MRP point estimates, weighted variance of the MRP estimates, and raw disaggregated sample means
-mrp.model: model for the multilevel modeling step of MRP (e.g. the string 'y ~ x + (1|z)' = estimate y as a function of fixed effect x and a random intercept for each category of z)
-weight.var: name of the weighting variable in the post-stratification dataset. Defaults to "weight"
+    geographies.path: path to a CSV containing geography identifiers (see example)
+    poll.path: path to a CSV containing the survey data for MRP disaggregation
+    post.strat.path: path to a CSV containing post-stratification for MRP's probability adjustment
+    bin.path: directory with which to store compressed R binaries for later use. For speed, EasyMRP will convert each CSV, as well as the multilevel model, into an R binary and load these for future MRP procedures. EasyMRP also stores the multilevel model in this directory so that R will not need to reconverge the model if you run the same script again
+    coef.path: path to a CSV that will contain the model's random and fixed effect estimates, along with significance levels
+    output.path: path to a CSV that will contain the MRP point estimates, weighted variance of the MRP estimates, and raw disaggregated sample means
+    mrp.model: model for the multilevel modeling step of MRP (e.g. the string 'y ~ x + (1|z)' = estimate y as a function of fixed effect x and a random intercept for each category of z)
+    weight.var: name of the weighting variable in the post-stratification dataset. Defaults to "weight"
 
 Define the following optional properties:
 
-state.fe.path: path to a CSV containing state-level aggregate fixed effects, which EasyMRP will merge into both the poll and post-stratification dataframes. Analysis of the reliability of MRP imputation suggests that the incorporation of fixed effects substantially increases the quality of MRP estimates 
-substate.fe.path: path to a CSV containing substate-level (Congressional district, county, metropolitan statistical area, etc.) aggregate fixed effects, which EasyMRP will merge into both the poll and post-stratification dataframes
-year.var: if fixed effects are being merged in by year, define the year variable
-state.var: if using state-level fixed effects OR estimating MRP at the level of state, define the state variable. Should be constant across all dataframes. Defaults to "state"
-substate.var: if using substate-level fixed effects OR estimate MRP at a sub-state jurisdiction, define the substate variable. Should be constant across all dataframes
-convert.underscore: if TRUE (the default), it converts Stata-friendly column names (foo_bar) into R-friendly names (foo.bar)
+    state.fe.path: path to a CSV containing state-level aggregate fixed effects, which EasyMRP will merge into both the poll and post-stratification dataframes. Analysis of the reliability of MRP imputation suggests that the incorporation of fixed effects substantially increases the quality of MRP estimates 
+    substate.fe.path: path to a CSV containing substate-level (Congressional district, county, metropolitan statistical area, etc.) aggregate fixed effects, which EasyMRP will merge into both the poll and post-stratification dataframes
+    year.var: if fixed effects are being merged in by year, define the year variable
+    state.var: if using state-level fixed effects OR estimating MRP at the level of state, define the state variable. Should be constant across all dataframes. Defaults to "state"
+    substate.var: if using substate-level fixed effects OR estimate MRP at a sub-state jurisdiction, define the substate variable. Should be constant across all dataframes
+    convert.underscore: if TRUE (the default), it converts Stata-friendly column names (foo_bar) into R-friendly names (foo.bar)
 
 ## Class methods
 
 To run the MRP procedure and output the public opinion estimates (to foo@output.path) and model data (to foo@coef.path), use the runMrp() method:
 
-foo<-runMrp(foo)
+    foo<-runMrp(foo)
 
 EasyMRP also contains a robustness check. This is a split-level validation technique, which (naturally) splits the survey in the multilevel modeling stage of MRP in two. The jurisditional sample of means of one half are treated as the population parameter, and a portion of the other half (say, 5%) is used to impute MRP estimates. If, for a given county, the MRP imputation is closer to the simulated population parameter than the 5% sample mean, then MRP "wins." If not, MRP "loses." EasyMRP reports the simulated sampling error, the simulated MRP error, the win percentage of MRP vis-a-vis raw survey disaggregation, and a t test where H0 = MRP is a worse measurement of public opinion than the sample mean. It also appends the results of the simulation to foo@output.path. To run the validation procedure, use the validationSim() method:
 
-foo<-validationSim(foo)
+    foo<-validationSim(foo)
 
 Example output (two simulations):
 
-MRP split-level validation procedure using 5.00% sample of the survey...
-
-Results of simulation #1:
-Sampling error: 0.39
-MRP error: 0.32
-Comparisons: 314
-Win %: 0.73%
-t value: 3.866925
-pr(|T| > |t|): 0.0001297358
-
-Results of all simulations so far:
-Sampling error: 0.39
-MRP error: 0.32
-Comparisons: 314
-Win %: 0.73%
-t value: 3.866925
-pr(|T| > |t|): 0.0001297358
-
-MRP split-level validation procedure using 5.00% sample of the survey...
-
-Results of simulation #2:
-Sampling error: 0.40
-MRP error: 0.32
-Comparisons: 345
-Win %: 0.75%
-t value: 4.710483
-pr(|T| > |t|): 3.370071e-06
-
-Results of all simulations so far:
-Sampling error: 0.40
-MRP error: 0.32
-Comparisons: 659
-Win %: 0.74%
-t value: 6.083234
-pr(|T| > |t|): 1.827467e-09
+    MRP split-level validation procedure using 5.00% sample of the survey...
+    
+    Results of simulation #1:
+    Sampling error: 0.39
+    MRP error: 0.32
+    Comparisons: 314
+    Win %: 0.73%
+    t value: 3.866925
+    pr(|T| > |t|): 0.0001297358
+    
+    Results of all simulations so far:
+    Sampling error: 0.39
+    MRP error: 0.32
+    Comparisons: 314
+    Win %: 0.73%
+    t value: 3.866925
+    pr(|T| > |t|): 0.0001297358
+    
+    MRP split-level validation procedure using 5.00% sample of the survey...
+    
+    Results of simulation #2:
+    Sampling error: 0.40
+    MRP error: 0.32
+    Comparisons: 345
+    Win %: 0.75%
+    t value: 4.710483
+    pr(|T| > |t|): 3.370071e-06
+    
+    Results of all simulations so far:
+    Sampling error: 0.40
+    MRP error: 0.32
+    Comparisons: 659
+    Win %: 0.74%
+    t value: 6.083234
+    pr(|T| > |t|): 1.827467e-09
 
 ## Example
 
