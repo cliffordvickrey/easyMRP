@@ -15,6 +15,7 @@ EasyMRP is designed for ease of use and descriptive reporting. It's ideal for pe
 ## Required packages
 
 arm (for multilevel/hierchical modeling): https://cran.r-project.org/web/packages/arm/index.html
+
 Hmisc (for weighted variance): https://cran.r-project.org/web/packages/Hmisc/index.html
 
 ## Properties
