@@ -20,9 +20,13 @@ Hmisc (for weighted variance): https://cran.r-project.org/web/packages/Hmisc/ind
 
 ## Properties
 
+Include easyMrp.R:
+
+    source('/path/to/easyMrp.R')
+
 Declare an Mrp object:
 
-foo<-Mrp()
+    foo<-Mrp()
 
 Define the following properties with the S4 slot selector (foo@bar<-x):
 
