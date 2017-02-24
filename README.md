@@ -10,6 +10,8 @@ MRP proceeds in two steps. First, using national survey data, a multilevel model
 
 EasyMRP allows social scientists to easily impute MRP estimates and run diagnostics on them. After exporting the requisite datasets (list of jurisdiction, poll data, post-stratification data, aggregate fixed effects) in third-party applications into CSVs, declare an MRP object with the multilevel model, paths to the datasets, and a few other properties. Use the runMrp() method, which will run the model, produce the MRP point estimates, and save A) the estimated parameters, B) the MRP point estimates, C) the raw disaggregated sample means by jurisdiction, and D) the weighted variance of the MRP point estimates (theoretically useful for many research questions). Run the validationSim() method to test the robustness of your results. And that's it!
 
+EasyMRP is designed for ease of use and descriptive reporting. It's ideal for people who are comfortable creating and exporting datasets in Stata, SPSS, or SAS but find R's arcane syntax a bit daunting. Consequently, it may (in its unchanged form) not be as flexible as some R power users would like. If you can think of ways to improve it, please let me know!
+
 ## Required packages
 
 arm (for multilevel/hierchical modeling): https://cran.r-project.org/web/packages/arm/index.html
@@ -41,13 +43,15 @@ Define the following optional properties:
     substate.var: if using substate-level fixed effects OR estimate MRP at a sub-state jurisdiction, define the substate variable. Should be constant across all dataframes
     convert.underscore: if TRUE (the default), it converts Stata-friendly column names (foo_bar) into R-friendly names (foo.bar)
 
+If you want to use EasyMRP with existing dataframes, simply define foo@poll<-df, foo@post.strat<-df, etc. and EasyMRP will ignore the paths.
+
 ## Class methods
 
 To run the MRP procedure and output the public opinion estimates (to foo@output.path) and model data (to foo@coef.path), use the runMrp() method:
 
     foo<-runMrp(foo)
 
-EasyMRP also contains a robustness check. This is a split-level validation technique, which (naturally) splits the survey in the multilevel modeling stage of MRP in two. The jurisditional sample of means of one half are treated as the population parameter, and a portion of the other half (say, 5%) is used to impute MRP estimates. If, for a given county, the MRP imputation is closer to the simulated population parameter than the 5% sample mean, then MRP "wins." If not, MRP "loses." EasyMRP reports the simulated sampling error, the simulated MRP error, the win percentage of MRP vis-a-vis raw survey disaggregation, and a t test where H0 = MRP is a worse measurement of public opinion than the sample mean. It also appends the results of the simulation to foo@output.path. To run the validation procedure, use the validationSim() method:
+EasyMRP also contains a robustness check, vital because MRP (like other simulations) reports no standard errors. This is a split-level validation technique, which (naturally) splits the survey in the multilevel modeling stage of MRP in two. The jurisditional sample of means of one half are treated as the population parameter, and a portion of the other half (say, 5%) is used to impute MRP estimates. If, for a given county, the MRP imputation is closer to the simulated population parameter than the 5% sample mean, then MRP "wins." If not, MRP "loses." EasyMRP reports the simulated sampling error, the simulated MRP error, the win percentage of MRP vis-a-vis raw survey disaggregation, and a t test where H0 = MRP is a worse measurement of public opinion than the sample mean. It also appends the results of the simulation to foo@output.path. To run the validation procedure, use the validationSim() method:
 
     foo<-validationSim(foo)
 
@@ -92,3 +96,11 @@ Example output (two simulations):
 ## Example
 
 See example.R, also in this Git repository.
+
+## License
+
+EasyMRP is distributed for free using the GNU general public license.
+
+## Contact
+
+Please direct any questions, comments, or ideas to Clifford Vickrey <clifforddavidvickrey@gmail.com>.
